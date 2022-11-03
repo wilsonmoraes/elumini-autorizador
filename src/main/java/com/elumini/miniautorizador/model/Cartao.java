@@ -1,17 +1,15 @@
 package com.elumini.miniautorizador.model;
 
 import com.elumini.miniautorizador.dto.CartaoCriacaoDto;
-import com.elumini.miniautorizador.dto.CartaoDto;
-import com.elumini.miniautorizador.exception.HandleException;
-import com.elumini.miniautorizador.utils.ValidacoesEnum;
+import com.elumini.miniautorizador.exception.SaldoInsuficienteException;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.*;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
 import java.time.LocalDate;
-import java.time.ZoneId;
+import java.util.Objects;
 
 @Getter
 @Setter
@@ -23,67 +21,30 @@ public class Cartao {
     private String numeroCartao;
     private String senha;
     private Double saldo;
+
     @Column(name = "data_criacao")
     private LocalDate dataCriacao;
-    private LocalDate validade;
-    @ManyToOne(cascade = CascadeType.ALL)
-    private Cliente cliente;
 
-    public Cartao(CartaoCriacaoDto cartaoCriacaoDto) {
-        this.numeroCartao = cartaoCriacaoDto.getNumeroCartao();
-        this.senha = cartaoCriacaoDto.getSenha();
-        this.saldo = 500.00;
-        this.dataCriacao = LocalDate.now();
-        this.validade = LocalDate.now().plusYears(3).plusMonths(10);
-    }
-
-    public Cartao(String numeroCartao, String senha, Double saldo, Cliente cliente) {
-        this.numeroCartao = numeroCartao;
-        this.senha = senha;
-        this.saldo = saldo;
-        this.dataCriacao = LocalDate.now();
-        this.validade = LocalDate.now().plusYears(3).plusMonths(10);
-        this.cliente = cliente;
-    }
-
-    public Cartao(CartaoCriacaoDto cartaoCriacaoDto, Cliente cliente) {
-        this.numeroCartao = cartaoCriacaoDto.getNumeroCartao();
-        this.senha = cartaoCriacaoDto.getSenha();
-        this.saldo = 500.00;
-        this.dataCriacao = LocalDate.now();
-        this.validade = LocalDate.now().plusYears(3).plusMonths(10);
-        this.cliente = cliente;
-    }
-
-    public void validarAtribuirNovoSaldo(Double valor, HandleException handleException) {
-        this.saldo = this.saldo >= valor ? this.saldo - valor :
-                (Double) handleException.throwExcecaoDeValidacao(ValidacoesEnum.SALDO_INSUFICIENTE);
-    }
-
-    public Cartao(CartaoDto cartaoDto) {
-        this.numeroCartao = cartaoDto.getNumeroCartao();
-        this.senha = cartaoDto.getSenha();
-        this.saldo = 500.00;
-        this.dataCriacao = formatarString(cartaoDto.getDataCriacao());
-        this.validade = formatarString(cartaoDto.getValidade());
-    }
-
-    public static LocalDate formatarString(String data) {
-        SimpleDateFormat formater = new SimpleDateFormat("dd/MM/yyyy");
-        LocalDate dataFormatada = null;
-        try {
-            dataFormatada = formater.parse(data).toInstant()
-                    .atZone(ZoneId.systemDefault())
-                    .toLocalDate();
-        } catch (ParseException e) {
-            e.printStackTrace();
+    public void validarAtribuirNovoSaldo(Double valor) {
+        this.saldo = Objects.isNull(this.saldo) ? 0L : this.saldo;
+        if (valor >= this.saldo) {
+            throw new SaldoInsuficienteException();
         }
-
-        return dataFormatada;
+        this.saldo = this.saldo - valor;
     }
+
 
     public Cartao() {
     }
 
+    public Cartao(String numeroCartao, String senha) {
+        this.numeroCartao = numeroCartao;
+        this.senha = senha;
+    }
+
+    public static Cartao fromDTO(CartaoCriacaoDto cartaoCriacaoDto) {
+        return new Cartao(cartaoCriacaoDto.getNumeroCartao(), cartaoCriacaoDto.getSenha());
+
+    }
 
 }

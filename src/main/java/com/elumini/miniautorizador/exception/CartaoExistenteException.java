@@ -1,4 +1,8 @@
 package com.elumini.miniautorizador.exception;
 
-public class CartaoExistenteException extends RuntimeException{
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
+
+@ResponseStatus(value = HttpStatus.CONFLICT)
+public class CartaoExistenteException extends RuntimeException {
 }

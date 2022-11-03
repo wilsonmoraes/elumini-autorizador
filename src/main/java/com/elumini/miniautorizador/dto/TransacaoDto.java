@@ -18,15 +18,15 @@ public class TransacaoDto {
 
     @NotNull
     @NotEmpty
-    private String senha;
+    private String senhaCartao;
 
     @NotNull
     @Min(value = 1)
     private Double valor;
 
-    public TransacaoDto(String numeroCartao, String senha, Double valor) {
+    public TransacaoDto(String numeroCartao, String senhaCartao, Double valor) {
         this.numeroCartao = numeroCartao;
-        this.senha = senha;
+        this.senhaCartao = senhaCartao;
         this.valor = valor;
     }
 
