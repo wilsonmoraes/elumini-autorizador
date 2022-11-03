@@ -33,6 +33,7 @@ public class CartaoServicoTest {
 
     private void Inicializar() {
         Cartao cartao = new Cartao("123456789", "123456");
+        cartao.setSaldo(500.00);
         cartaoRepository.saveAndFlush(cartao);
     }
 
@@ -57,31 +58,25 @@ public class CartaoServicoTest {
         CartaoCriacaoDto cartaoDuplicado = new CartaoCriacaoDto("123456789", "senha");
 
         try {
-            CartaoDto cartaoCriado = servicoDeCartao.criar(cartaoDuplicado);
+            servicoDeCartao.criar(cartaoDuplicado);
             fail();
         } catch (Exception e) {
             assertSame(e.getClass(), CartaoExistenteException.class);
         }
     }
 
-    @Test
-    public void deveReotornarSaldoDoCartaoCadastradoParaNumeroExistente() {
-        Inicializar();
-        String numeroDeCartaoExistente = "123456789";
 
-        Double saldoCartao = servicoDeCartao.obterSaldo(numeroDeCartaoExistente);
-
-        assertEquals(700.00, saldoCartao);
-    }
 
     @Test
     public void deveReotornarErroParaNumeroInexistente() {
         Inicializar();
         String numeroDeCartaoInexistente = "111111111";
-
-        Double saldoCartao = servicoDeCartao.obterSaldo(numeroDeCartaoInexistente);
-
-        assertFalse(saldoCartao != 0L);
+        try {
+            servicoDeCartao.obterSaldo(numeroDeCartaoInexistente);
+            fail();
+        } catch (Exception e) {
+            assertSame(e.getClass(), CartaoInexistenteException.class);
+        }
 
     }
 
